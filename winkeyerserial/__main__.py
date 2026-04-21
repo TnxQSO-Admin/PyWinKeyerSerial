@@ -170,8 +170,10 @@ class WinKeyer(QtWidgets.QMainWindow):
             self.comboBox_device.setItemData(index, serialport.description)
             self.device = serialport.device
             self.settings_dict["device"] = self.device
-        self.comboBox_device.currentIndexChanged.connect(self.change_serial)
+        self.comboBox_device.setEditable(True)
         self.loadsaved()
+        self.comboBox_device.currentIndexChanged.connect(self.change_serial)
+        self.comboBox_device.lineEdit().editingFinished.connect(self.change_serial)
 
     def change_serial(self):
         """
@@ -235,7 +237,11 @@ class WinKeyer(QtWidgets.QMainWindow):
         Opens the serial port and sets its parameters
         """
         self.outputbox.clear()
-        self.comboBox_device.setCurrentIndex(self.comboBox_device.findText(self.device))
+        index = self.comboBox_device.findText(self.device)
+        if index >= 0:
+            self.comboBox_device.setCurrentIndex(index)
+        else:
+            self.comboBox_device.setCurrentText(self.device)
         try:
             if self.port:
                 self.port.close()
