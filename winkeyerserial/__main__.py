@@ -63,13 +63,17 @@ from serial.tools.list_ports import comports
 from PyQt6 import QtWidgets
 from PyQt6.QtWidgets import QWidget
 from PyQt6.QtCore import QDir
-from PyQt6.QtCore import Qt
+
+# from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QFontDatabase
 from PyQt6 import uic
 from PyQt6.QtCore import QTimer
 from PyQt6.QtCore import QThread
 
-from settings import Settings
+try:
+    from settings import Settings
+except ModuleNotFoundError:
+    from winkeyerserial.settings import Settings
 
 logging.basicConfig(level=logging.WARNING)
 
