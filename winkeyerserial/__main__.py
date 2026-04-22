@@ -170,8 +170,10 @@ class WinKeyer(QtWidgets.QMainWindow):
             self.comboBox_device.setItemData(index, serialport.description)
             self.device = serialport.device
             self.settings_dict["device"] = self.device
-        self.comboBox_device.currentIndexChanged.connect(self.change_serial)
+        self.comboBox_device.setEditable(True)
         self.loadsaved()
+        self.comboBox_device.currentIndexChanged.connect(self.change_serial)
+        self.comboBox_device.lineEdit().editingFinished.connect(self.change_serial)
 
     def change_serial(self):
         """
@@ -235,7 +237,13 @@ class WinKeyer(QtWidgets.QMainWindow):
         Opens the serial port and sets its parameters
         """
         self.outputbox.clear()
-        self.comboBox_device.setCurrentIndex(self.comboBox_device.findText(self.device))
+        self.comboBox_device.blockSignals(True)
+        index = self.comboBox_device.findText(self.device)
+        if index >= 0:
+            self.comboBox_device.setCurrentIndex(index)
+        else:
+            self.comboBox_device.setCurrentText(self.device)
+        self.comboBox_device.blockSignals(False)
         try:
             if self.port:
                 self.port.close()
@@ -442,13 +450,13 @@ class WinKeyer(QtWidgets.QMainWindow):
             if self.port.in_waiting:
                 byte = self.port.read(1)
                 if (byte[0] & b"\xc0"[0]) == b"\xc0"[0]:  # Status Change
-                    # print(f"Status Change: {byte}")
                     pass
                 elif (byte[0] & b"\xc0"[0]) == b"\x80"[0]:  # speed pot change
                     self.potspeed(byte[0])
                 else:  # process echoback character
-                    # print(byte.decode(), end="", flush=True)
-                    self.outputbox.insertPlainText(f"{byte.decode()}")
+                    if 0x20 <= byte[0] <= 0x7E:
+                        # print(byte.decode(), end="", flush=True)
+                        self.outputbox.insertPlainText(f"{byte.decode()}")
         except:
             self.host_init()  # Some one may have unplugged the keyer.
 
